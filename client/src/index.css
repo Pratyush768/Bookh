@@ -1,0 +1,35 @@
+/* Add this to the top of your index.css file */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #2563EB;
+    --color-secondary: #FBBF24;
+}
+
+/* ✨ NEW: Define a color theme using CSS Variables */
+:root {
+    --nav-bg: #ffffff; /* Main background - white */
+    --nav-text: #111827; /* Main text - gray-900 */
+    --nav-border: #e5e7eb; /* Border color - gray-200 */
+    --nav-logo-fill: #111827; /* SVG Logo color */
+
+    --btn-secondary-bg: #f3f4f6; /* Secondary Button BG - gray-100 */
+    --btn-secondary-text: #111827;
+    --btn-secondary-border: #d1d5db; /* gray-300 */
+    --btn-secondary-hover-bg: #e5e7eb; /* gray-200 */
+
+    --btn-primary-bg: #111827; /* Primary Button BG - gray-900 */
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover-bg: #374151; /* gray-700 */
+}
+
+
+*{
+    font-family: Outfit;
+}
+
+.font-playfair{
+    font-family: Playfair !important;
+}
