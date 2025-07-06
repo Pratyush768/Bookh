@@ -42,9 +42,9 @@ import rain from "./rain.jpg"
 import week from "./week.jpg"
 import romantic from "./romantic.jpg"
 import Home from "./home.svg"
-import hotellogo from './hotellogo.jpg'
-
-
+import V from "./V.svg"
+import NobleNights from "./nobleNights.svg"
+import horeg from "./horeg.jpg"
 
 export const assets = {
     logo,
@@ -79,14 +79,18 @@ export const assets = {
     uploadArea,
     totalBookingIcon,
     totalRevenueIcon,
-    Home
+    Home,
+    V,
+    NobleNights,
+    horeg
 }
 
 export const cities = [
-    "Dubai",
-    "Singapore",
-    "New York",
-    "London",
+    "Mumbai",
+    "Delhi",
+    "Vijaywada",
+    "Hydrabad",
+    "Bhubneswar"
 ];
 
 // Exclusive Offers Dummy Data

@@ -1,9 +1,12 @@
 import React from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import HotelReg from './components/HotelReg';
+import { Toaster } from 'react-hot-toast';
+
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import HotelReg from './components/HotelReg';
+import { useAppContext } from './context/AppContext';
 
 // Pages
 import Home from './pages/Home';
@@ -17,15 +20,21 @@ import Dashboard from './pages/hotelOwner/Dashboard';
 import AddRoom from './pages/hotelOwner/AddRoom';
 import ListRoom from './pages/hotelOwner/ListRoom';
 
+
 const App = () => {
-    const isOwnerPath = useLocation().pathname.includes("owner");
+    const isOwnerPath = useLocation().pathname.startsWith("/owner");
+    const { showHotelReg, setShowHotelReg } = useAppContext();
+
+    const handleCloseReg = () => {
+        setShowHotelReg(false);
+    };
 
     return (
-        <div className="flex flex-col min-h-screen">
-            {/* Navbar only for non-owner pages */}
+        <div className="font-inter flex flex-col min-h-screen">
+            <Toaster position="top-center" reverseOrder={false} />
             {!isOwnerPath && <Navbar />}
+            {showHotelReg && <HotelReg onClose={handleCloseReg} />}
 
-            {/* Page Content */}
             <main className="flex-grow">
                 <Routes>
                     {/* Public Routes */}
@@ -43,7 +52,6 @@ const App = () => {
                 </Routes>
             </main>
 
-            {/* Footer only for non-owner pages */}
             {!isOwnerPath && <Footer />}
         </div>
     );

@@ -1,68 +1,131 @@
-import React from 'react';
-import { assets, cities } from '../assets/assets';
+import { useState } from "react";
+import { useAppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
+import { assets, cities } from "../assets/assets";
 
-// The component now accepts an `onClose` prop to handle closing the modal
-const HotelReg = ({ onClose }) => {
+const HotelReg = () => {
+    const { setShowHotelReg, axios, getToken, setIsOwner } = useAppContext();
+
+    const [name, setName] = useState("");
+    const [address, setAddress] = useState("");
+    const [contact, setContact] = useState("");
+    const [city, setCity] = useState("");
+
+    const onSubmitHandler = async (event) => {
+        event.preventDefault();
+        try {
+            const { data } = await axios.post(
+                `/api/hotels/`,
+                { name, contact, address, city },
+                { headers: { Authorization: `Bearer ${await getToken()}` } }
+            );
+
+            if (data.success) {
+                toast.success(data.message);
+                setIsOwner(true);
+                setShowHotelReg(false);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
     return (
-        // 1. Added a backdrop-blur for a premium "frosted glass" effect
-        <div className='fixed top-0 bottom-0 left-0 right-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm'>
-            <form className='flex bg-white rounded-2xl max-w-4xl max-md:mx-4 shadow-xl shadow-amber-900/10'>
-                {/* Left-side image */}
-                <img src={assets.regImage} alt="reg-image" className='w-1/2 rounded-l-2xl object-cover hidden md:block'/>
+        <div
+            onClick={() => setShowHotelReg(false)}
+            className="fixed top-0 left-0 right-0 bottom-0 z-[100] bg-black/70 flex justify-center items-center"
+        >
+            <form
+                onSubmit={onSubmitHandler}
+                onClick={(e) => e.stopPropagation()}
+                className="flex bg-white rounded-xl shadow-lg max-w-4xl max-md:mx-4"
+            >
+                {/* Image Section */}
+                <img
+                    src={assets.horeg}
+                    alt="register"
+                    className="w-1/2 object-cover rounded-l-xl hidden md:block"
+                />
 
-                <div className='relative flex flex-col items-center md:w-1/2 p-8 md:p-10'>
-                    {/* Close button with better styling and accessibility */}
-                    <button type="button" onClick={onClose} className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 transition-colors">
-                        <img src={assets.closeIcon} alt="close-icon" className='h-4 w-4 cursor-pointer'/>
-                    </button>
+                {/* Form Section */}
+                <div className="relative flex flex-col items-start gap-4 md:w-1/2 p-8 md:p-10 text-gray-800 font-inter">
+                    <img
+                        src={assets.closeIcon}
+                        alt="close"
+                        className="absolute top-4 right-4 h-5 w-5 cursor-pointer opacity-60 hover:opacity-90"
+                        onClick={() => setShowHotelReg(false)}
+                    />
+                    <h2 className="text-3xl font-playfair font-semibold text-amber-800 mt-4">
+                        Register Your Hotel
+                    </h2>
 
-                    {/* Title with premium typography */}
-                    <p className='text-3xl font-serif text-gray-800 mt-6'>Register Your Hotel</p>
-
-                    {/* 2. All inputs and selects are custom-styled with golden accents */}
                     {/* Hotel Name */}
-                    <div className='w-full mt-6'>
-                        <label htmlFor="name" className="text-sm font-medium text-gray-700">
-                            Hotel Name
-                        </label>
-                        <input id='name' type="text" placeholder="e.g., The Golden Sands" className="w-full bg-stone-50 rounded-lg border border-gray-300 px-4 py-2.5 mt-1 outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition" required/>
-                    </div>
-                    {/* Phone */}
-                    <div className='w-full mt-4'>
-                        <label htmlFor="contact" className="text-sm font-medium text-gray-700">
-                            Phone
-                        </label>
-                        <input id='contact' type="tel" placeholder="e.g., +91 98765 43210" className="w-full bg-stone-50 rounded-lg border border-gray-300 px-4 py-2.5 mt-1 outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition" required/>
-                    </div>
-                    {/* Address */}
-                    <div className='w-full mt-4'>
-                        <label htmlFor="address" className="text-sm font-medium text-gray-700">
-                            Address
-                        </label>
-                        <input id='address' type="text" placeholder="Street, Area" className="w-full bg-stone-50 rounded-lg border border-gray-300 px-4 py-2.5 mt-1 outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition" required/>
-                    </div>
-                    {/* Select City Drop Down with custom arrow */}
-                    <div className='w-full mt-4'>
-                        <label htmlFor="city" className="text-sm font-medium text-gray-700">City</label>
-                        <div className="relative mt-1">
-                            <select id="city" className='appearance-none w-full bg-stone-50 rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition' required>
-                                <option value="" disabled selected>Select a City</option>
-                                {cities.map((city) => (
-                                    <option key={city} value={city}>{city}</option>
-                                ))}
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
-                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                            </div>
-                        </div>
+                    <div className="w-full">
+                        <label className="text-sm text-gray-600 font-medium">Hotel Name</label>
+                        <input
+                            type="text"
+                            placeholder="e.g. Royal Grand Palace"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            className="mt-1 w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-light focus:outline-amber-500"
+                        />
                     </div>
 
-                    {/* 3. Premium, golden-themed Register button */}
-                    <button className='w-full bg-amber-600 hover:bg-amber-700 transition-all text-white font-bold py-3 rounded-lg cursor-pointer mt-8 shadow-md hover:shadow-lg transform hover:scale-105'>
+                    {/* Phone */}
+                    <div className="w-full">
+                        <label className="text-sm text-gray-600 font-medium">Phone</label>
+                        <input
+                            type="text"
+                            placeholder="e.g. +91 9876543210"
+                            value={contact}
+                            onChange={(e) => setContact(e.target.value)}
+                            required
+                            className="mt-1 w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-light focus:outline-amber-500"
+                        />
+                    </div>
+
+                    {/* Address */}
+                    <div className="w-full">
+                        <label className="text-sm text-gray-600 font-medium">Address</label>
+                        <textarea
+                            rows="2"
+                            placeholder="e.g. 123 MG Road, Bengaluru"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            required
+                            className="mt-1 w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-light focus:outline-amber-500 resize-none"
+                        />
+                    </div>
+
+                    {/* City */}
+                    <div className="w-full max-w-60">
+                        <label className="text-sm text-gray-600 font-medium">City</label>
+                        <select
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            required
+                            className="mt-1 w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-light focus:outline-amber-500"
+                        >
+                            <option value="">Select City</option>
+                            {cities.map((city) => (
+                                <option key={city} value={city}>
+                                    {city}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                        type="submit"
+                        className="mt-4 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:brightness-105 text-white font-medium px-6 py-2.5 rounded-full transition-all shadow-md"
+                    >
                         Register
                     </button>
                 </div>
-
             </form>
         </div>
     );

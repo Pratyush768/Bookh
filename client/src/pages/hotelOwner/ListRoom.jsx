@@ -1,75 +1,113 @@
-import React, { useState } from 'react'
-import { roomsDummyData } from '../../assets/assets'
-
-// A custom-styled toggle switch with the golden-amber theme
-const AvailabilityToggle = ({ checked, onChange }) => {
-    return (
-        <label className='relative inline-flex items-center cursor-pointer'>
-            <input type="checkbox" className='sr-only peer' checked={checked} onChange={onChange} />
-            <div className="w-12 h-7 bg-gray-200 rounded-full peer peer-checked:bg-amber-600 transition-colors duration-300"></div>
-            <span className="dot absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 ease-in-out peer-checked:translate-x-5"></span>
-        </label>
-    );
-};
+import React, { useEffect, useState } from 'react';
+import Title from '../../components/Title';
+import { useAppContext } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 
 const ListRoom = () => {
-    const [rooms, setRooms] = useState(roomsDummyData);
+    const { axios, getToken, user } = useAppContext();
+    const [rooms, setRooms] = useState([]);
 
-    const handleAvailabilityChange = (id) => {
-        setRooms(prevRooms =>
-            prevRooms.map(room =>
-                room._id === id ? { ...room, isAvailable: !room.isAvailable } : room
-            )
-        );
+    const fetchRooms = async () => {
+        try {
+            const { data } = await axios.get('/api/rooms/owner', {
+                headers: { Authorization: `Bearer ${await getToken()}` },
+            });
+            if (data.success) {
+                setRooms(data.rooms);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
     };
 
-    return (
-        <div>
-            {/* 1. Replaced Title component for full styling control */}
-            <div className='flex flex-col items-start text-left mb-12'>
-                <h1 className='font-serif text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-amber-800 to-amber-600 font-bold'>
-                    Room Listings
-                </h1>
-                <p className='text-base text-gray-600 mt-3 max-w-2xl'>
-                    View, edit, or manage all listed rooms to keep your information up-to-date.
-                </p>
-            </div>
+    const toggleAvailability = async (roomId) => {
+        try {
+            const { data } = await axios.post(
+                '/api/rooms/toggle-availability',
+                { roomId },
+                {
+                    headers: { Authorization: `Bearer ${await getToken()}` },
+                }
+            );
+            if (data.success) {
+                toast.success(data.message);
+                fetchRooms();
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
 
-            {/* 2. Redesigned table container to be a premium card */}
-            <div className='w-full bg-white rounded-2xl border border-amber-200/60 shadow-sm p-4'>
-                <div className="overflow-x-auto">
-                    <table className='w-full'>
-                        {/* 3. Modern table header styling */}
-                        <thead>
+    useEffect(() => {
+        if (user) {
+            fetchRooms();
+        }
+    }, [user]);
+
+    return (
+        <div className="py-28 md:pt-36 px-4 md:px-16 lg:px-24 xl:px-32 bg-[#FFFBF2] min-h-screen">
+            <Title
+                align="left"
+                font="playfair"
+                title={
+                    <span className="bg-gradient-to-r from-yellow-700 via-amber-500 to-yellow-600 bg-clip-text text-transparent">
+            Room Listings
+          </span>
+                }
+                subTitle="Manage your luxurious accommodations with ease and elegance."
+            />
+
+            <p className="text-gray-500 mt-10 text-sm uppercase tracking-wide">Total Listed Rooms</p>
+
+            <div className="w-full max-w-5xl mt-4 border rounded-2xl border-gray-200 shadow-xl bg-white overflow-hidden">
+                <div className="overflow-y-auto max-h-96 custom-scrollbar">
+                    <table className="w-full text-sm text-gray-800">
+                        <thead className="bg-gradient-to-r from-[#FFF7E1] via-[#FFF0D6] to-[#FFEAC3] text-amber-800 font-medium tracking-wide">
                         <tr>
-                            <th className='p-4 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider border-b-2 border-amber-100'>Room Type</th>
-                            <th className='p-4 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider border-b-2 border-amber-100 max-sm:hidden'>Amenities</th>
-                            <th className='p-4 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider border-b-2 border-amber-100'>Price / night</th>
-                            <th className='p-4 text-sm font-semibold text-gray-500 uppercase tracking-wider border-b-2 border-amber-100 text-center'>Availability</th>
+                            <th className="py-4 px-6 text-left">Room Name</th>
+                            <th className="py-4 px-6 text-left max-sm:hidden">Facilities</th>
+                            <th className="py-4 px-6 text-left">Price / Night</th>
+                            <th className="py-4 px-6 text-center">Availability</th>
                         </tr>
                         </thead>
-
-                        <tbody className='text-sm'>
-                        {rooms.map((item) => (
-                            <tr key={item._id} className="border-b border-gray-100 last:border-0">
-                                <td className='p-4 text-gray-800 font-medium'>
-                                    {item.roomType}
+                        <tbody>
+                        {rooms.map((item, index) => (
+                            <tr
+                                key={index}
+                                className="border-t border-gray-200 hover:bg-[#FFFAF0] transition-all duration-300"
+                            >
+                                <td className="py-4 px-6 font-semibold">{item.roomType}</td>
+                                <td className="py-4 px-6 max-sm:hidden text-gray-500">
+                                    {item.amenities.join(', ')}
                                 </td>
-                                <td className='p-4 text-gray-600 max-sm:hidden'>
-                                    {item.amenities.slice(0, 3).join(', ')}
+                                <td className="py-4 px-6 text-amber-700 font-semibold">
+                                    ₹{item.pricePerNight}
                                 </td>
-                                <td className='p-4 text-gray-800 font-medium'>
-                                    ₹{item.pricePerNight.toLocaleString('en-IN')}
-                                </td>
-                                <td className='p-4 text-center'>
-                                    {/* 4. Themed custom toggle switch */}
-                                    <AvailabilityToggle
-                                        checked={item.isAvailable}
-                                        onChange={() => handleAvailabilityChange(item._id)}
-                                    />
+                                <td className="py-4 px-6 text-center">
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            onChange={() => toggleAvailability(item._id)}
+                                            checked={item.isAvailable}
+                                        />
+                                        <div className="w-12 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-600 transition-all duration-300"></div>
+                                        <span className="dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6 duration-300 shadow"></span>
+                                    </label>
                                 </td>
                             </tr>
                         ))}
+                        {rooms.length === 0 && (
+                            <tr>
+                                <td colSpan="4" className="py-6 text-center text-gray-400">
+                                    No rooms listed yet.
+                                </td>
+                            </tr>
+                        )}
                         </tbody>
                     </table>
                 </div>

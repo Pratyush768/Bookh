@@ -1,97 +1,135 @@
-import React, { useState } from 'react';
-import { assets, userBookingsDummyData } from '../assets/assets';
+import React, { useEffect, useState } from 'react';
+import Title from '../components/Title';
+import { assets } from '../assets/assets';
+import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
 
 const MyBookings = () => {
-    const [bookings, setBookings] = useState(userBookingsDummyData);
+    const { axios, getToken, user } = useAppContext();
+    const [bookings, setBookings] = useState([]);
+
+    const fetchUserBookings = async () => {
+        try {
+            const { data } = await axios.get('/api/bookings/user', {
+                headers: { Authorization: `Bearer ${await getToken()}` },
+            });
+            if (data.success) {
+                setBookings(data.bookings);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
+    const handlePayment = async (bookingId) => {
+        try {
+            const { data } = await axios.post(
+                '/api/bookings/stripe-payment',
+                { bookingId },
+                { headers: { Authorization: `Bearer ${await getToken()}` } }
+            );
+            if (data.success) {
+                window.location.href = data.url;
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
+    useEffect(() => {
+        if (user) {
+            fetchUserBookings();
+        }
+    }, [user]);
 
     return (
-        // 1. A warm, cream-colored background for a golden feel
-        <div className='py-28 md:py-36 px-4 md:px-16 lg:px-24 xl:px-32 bg-[#FFFBF2] min-h-screen'>
+        <div className="py-28 md:pb-35 md:pt-32 px-4 md:px-16 lg:px-24 xl:px-32 bg-[#FFFAF0] min-h-screen">
+            <Title
+                title="My Bookings"
+                subTitle="Effortlessly manage your luxurious stays — view past, current, or upcoming reservations in one elegant dashboard."
+                align="left"
+            />
 
-            {/* Page Header */}
-            <div className='flex flex-col items-start text-left mb-12 max-w-7xl mx-auto'>
-                {/* 2. Page title with a golden text gradient */}
-                <h1 className='font-serif text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-amber-800 to-amber-600 font-bold'>
-                    My Bookings
-                </h1>
-                <p className='text-base text-gray-600 mt-3 max-w-2xl'>
-                    Easily manage your past, current, and upcoming reservations in one place.
-                </p>
-            </div>
-
-            {/* Booking Cards List */}
-            <div className='max-w-7xl mx-auto w-full flex flex-col gap-6'>
-
-                {/* Optional: Add a header for desktop view if desired */}
-                {/* <div className='hidden md:grid md:grid-cols-[2fr_1fr_1fr] ..."> ... </div> */}
+            <div className="max-w-6xl mt-10 w-full text-gray-800 space-y-6">
+                <div className="hidden md:grid md:grid-cols-[3fr_2fr_1fr] w-full border-b border-gray-300 font-medium text-base pb-3 text-[#9A6700] uppercase tracking-wide">
+                    <div>Hotels</div>
+                    <div>Date & Timings</div>
+                    <div>Payment</div>
+                </div>
 
                 {bookings.map((booking) => (
-                    // 3. Each booking is now a self-contained, beautifully styled card
-                    <div key={booking._id} className='group bg-white flex flex-col md:flex-row items-start p-6 gap-6 border border-transparent rounded-2xl shadow-sm hover:shadow-xl hover:shadow-amber-900/10 hover:border-amber-300/50 transition-all duration-300'>
-
-                        {/* Column 1: Hotel & Room Details */}
-                        <div className='flex-1 flex flex-col md:flex-row gap-6'>
-                            <img src={booking.room.images[0]} alt="hotel-img" className='w-full md:w-44 h-48 md:h-full rounded-xl shadow object-cover'/>
-                            <div className='flex flex-col gap-1.5'>
-                                <p className='font-serif text-2xl text-gray-800 hover:text-amber-700 transition-colors cursor-pointer'>{booking.hotel.name}
-                                    <span className='font-sans text-sm text-gray-600'> ({booking.room.roomType})</span>
+                    <div
+                        key={booking._id}
+                        className="grid grid-cols-1 md:grid-cols-[3fr_2fr_1fr] bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden"
+                    >
+                        {/* Hotel Info */}
+                        <div className="flex flex-col md:flex-row gap-4 p-4">
+                            <img
+                                className="w-full md:w-44 h-36 object-cover rounded-xl shadow"
+                                src={booking.room.images[0]}
+                                alt="hotel-img"
+                            />
+                            <div className="flex flex-col justify-center gap-2">
+                                <p className="font-playfair text-xl text-[#3B3B3B]">
+                                    {booking.hotel.name}
+                                    <span className="font-inter text-sm text-gray-500"> ({booking.room.roomType})</span>
                                 </p>
-                                <div className='flex items-center gap-1.5 text-sm text-gray-500 mt-1'>
-                                    <img src={assets.locationIcon} alt="location-icon" className="w-4 h-4"/>
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                    <img src={assets.locationIcon} alt="location-icon" />
                                     <span>{booking.hotel.address}</span>
                                 </div>
-                                <div className='flex items-center gap-1.5 text-sm text-gray-500'>
-                                    <img src={assets.guestsIcon} alt="guests-icon" className="w-4 h-4"/>
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                    <img src={assets.guestsIcon} alt="guests-icon" />
                                     <span>Guests: {booking.guests}</span>
                                 </div>
-                                <p className='text-lg font-semibold text-amber-800 mt-3'>
-                                    Total: ₹{booking.totalPrice.toLocaleString('en-IN')}
-                                </p>
+                                <p className="text-base font-medium text-[#9A6700]">Total: ₹{booking.totalPrice}</p>
                             </div>
                         </div>
 
-                        {/* Column 2: Dates & Payment */}
-                        <div className="md:border-l border-gray-200/80 md:pl-6 flex flex-col justify-between h-full gap-4 w-full md:w-auto">
-                            <div className='flex md:flex-col gap-6'>
-                                <div>
-                                    <p className="font-semibold text-gray-700">Check-In:</p>
-                                    <p className="text-gray-500 text-sm">
-                                        {new Date(booking.checkInDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-gray-700">Check-Out:</p>
-                                    <p className="text-gray-500 text-sm">
-                                        {new Date(booking.checkOutDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                    </p>
-                                </div>
+                        {/* Dates */}
+                        <div className="flex flex-col justify-center items-start md:items-center md:flex-row gap-6 p-4 border-t md:border-t-0 md:border-l border-gray-200">
+                            <div>
+                                <p className="font-semibold text-gray-700">Check-In:</p>
+                                <p className="text-sm text-gray-500">{new Date(booking.checkInDate).toDateString()}</p>
                             </div>
+                            <div>
+                                <p className="font-semibold text-gray-700">Check-Out:</p>
+                                <p className="text-sm text-gray-500">{new Date(booking.checkOutDate).toDateString()}</p>
+                            </div>
+                        </div>
 
-                            <div className='flex flex-col items-start pt-3'>
-                                <div className='flex items-center gap-2'>
-                                    <div className={`h-2.5 w-2.5 rounded-full ${booking.isPaid ? "bg-green-500" : "bg-red-500"}`}></div>
-                                    <p className="text-sm font-semibold">
-                                        Payment: <span className={booking.isPaid ? "text-green-600" : "text-red-600"}>{booking.isPaid ? "Paid" : "Pending"}</span>
-                                    </p>
-                                </div>
-                                {!booking.isPaid && (
-                                    // 4. Premium "Pay Now" button
-                                    <button className='w-full md:w-auto mt-4 px-6 py-2 text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105'>
-                                        Pay Now
-                                    </button>
-                                )}
+                        {/* Payment Status */}
+                        <div className="flex flex-col justify-center items-start md:items-center gap-4 p-4 border-t md:border-t-0 md:border-l border-gray-200">
+                            <div className="flex items-center gap-2">
+                                <div
+                                    className={`h-3 w-3 rounded-full ${
+                                        booking.isPaid ? 'bg-green-500' : 'bg-red-500'
+                                    }`}
+                                ></div>
+                                <p
+                                    className={`text-sm font-medium ${
+                                        booking.isPaid ? 'text-green-600' : 'text-red-600'
+                                    }`}
+                                >
+                                    {booking.isPaid ? 'Paid' : 'Unpaid'}
+                                </p>
                             </div>
+                            {!booking.isPaid && (
+                                <button
+                                    onClick={() => handlePayment(booking._id)}
+                                    className="px-5 py-2 text-sm text-white bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 rounded-full hover:brightness-110 transition-all"
+                                >
+                                    Pay Now
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
             </div>
-
-            {bookings.length === 0 && (
-                <div className="text-center py-20 max-w-7xl mx-auto">
-                    <p className="text-2xl font-serif text-gray-700">No Bookings Yet</p>
-                    <p className="mt-2 text-gray-500">When you book a stay, your reservations will appear here.</p>
-                </div>
-            )}
         </div>
     );
 };
