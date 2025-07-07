@@ -11,27 +11,10 @@ const MyBookings = () => {
     const fetchUserBookings = async () => {
         try {
             const { data } = await axios.get('/api/bookings/user', {
-                headers: { Authorization: Bearer ${await getToken()} },
+                headers: { Authorization: `Bearer ${await getToken()}` },
             });
             if (data.success) {
                 setBookings(data.bookings);
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            toast.error(error.message);
-        }
-    };
-
-    const handlePayment = async (bookingId) => {
-        try {
-            const { data } = await axios.post(
-                '/api/bookings/stripe-payment',
-                { bookingId },
-                { headers: { Authorization: Bearer ${await getToken()} } }
-            );
-            if (data.success) {
-                window.location.href = data.url;
             } else {
                 toast.error(data.message);
             }
@@ -118,14 +101,6 @@ const MyBookings = () => {
                                     {booking.isPaid ? 'Paid' : 'Unpaid'}
                                 </p>
                             </div>
-                            {!booking.isPaid && (
-                                <button
-                                    onClick={() => handlePayment(booking._id)}
-                                    className="px-5 py-2 text-sm text-white bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 rounded-full hover:brightness-110 transition-all"
-                                >
-                                    Pay Now
-                                </button>
-                            )}
                         </div>
                     </div>
                 ))}
