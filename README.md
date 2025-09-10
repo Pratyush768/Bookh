@@ -5,9 +5,10 @@ It provides customers with a seamless reservation experience while enabling admi
 
 <p align="center">
   <a href="https://noblenights.vercel.app/" target="_blank">
-    <img src="https://your-image-link.gif" alt="Live Demo" width="200"/>
+    <img src="https://img.shields.io/badge/Try%20Now-Noble%20Nights-ff7eb9?style=for-the-badge&logo=vercel&logoColor=white&labelColor=8E2DE2" alt="Noble Nights Demo"/>
   </a>
 </p>
+
 
 
 
