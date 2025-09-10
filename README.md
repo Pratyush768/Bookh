@@ -3,7 +3,14 @@
 A **full-stack hotel booking system** built with the **MERN stack (MongoDB, Express.js, React, Node.js)**.  
 It provides customers with a seamless reservation experience while enabling admins to efficiently manage rooms, bookings, and users.  
 
----
+<p align="center">
+  <a href="https://noblenights.vercel.app/" target="_blank" style="text-decoration:none;">
+    <span style="display:inline-block;padding:10px 18px;border-radius:8px;background:#111827;color:#fff;font-weight:600;">
+      ▶ Try Live Demo — Noble Nights
+    </span>
+  </a>
+</p>
+
 
 ## ✨ Features  
 
